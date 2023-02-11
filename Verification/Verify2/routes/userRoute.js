@@ -4,8 +4,8 @@ const crypto = require('crypto')
 const asyncHandler = require('async-handler')
 const { User, validate } = require('../models/UserModel')
 const Token = require('../models/token')
-const token = require('../models/token')
-const sendEmail = require('../utils/email')
+// const token = require('../models/token')
+const { sendEmail } = require('../utils/email')
 
 router.post('/', async (req, res) => {
      try {
@@ -27,12 +27,11 @@ router.post('/', async (req, res) => {
                     userId: user._id,
                     token: crypto.randomBytes(32).toString('hex')
                 }).save()
+                const message = `${process.env.BASE_URL}/users/verify/${user._id}/${token.token}`
+                await sendEmail(user.email, 'verify email', message);
+    
+                res.send('email sent to your account, please verify')
             }
-
-            const message = `${process.env.BASE_URL}/users/verify/${userId}/${token.token}`
-            await sendEmail(user.email, 'verify email', message);
-
-            res.send('email sent to your account, please verify')
         }
     } catch (err) {
         console.log(err);
